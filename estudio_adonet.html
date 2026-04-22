@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estudio ADO.NET — Etapa 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #1a1e2a;
+    --border: #252a3a;
+    --accent: #4f8ef7;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0a0c10;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0d0f14 0%, #111827 60%, #1a1040 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 32px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(79,142,247,0.15);
+    border: 1px solid rgba(79,142,247,0.3);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 700;
+    background: linear-gradient(90deg, #e2e8f0, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  header p { color: var(--muted); font-size: 14px; }
+
+  /* NAV TABS */
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 16px 32px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    background: var(--surface);
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav button:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  nav button.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    background: rgba(79,142,247,0.06);
+  }
+
+  /* MAIN CONTENT */
+  main { max-width: 900px; margin: 0 auto; padding: 32px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #f1f5f9; }
+  h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #cbd5e1; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(79,142,247,0.3); }
+
+  /* CONCEPT GRID */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    border-left: 3px solid var(--accent);
+  }
+  .concept-card.green { border-left-color: var(--accent3); }
+  .concept-card.purple { border-left-color: var(--accent2); }
+  .concept-card.yellow { border-left-color: var(--warn); }
+  .concept-card .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .concept-card.green .label { color: var(--accent3); }
+  .concept-card.purple .label { color: var(--accent2); }
+  .concept-card.yellow .label { color: var(--warn); }
+  .concept-card h3 { font-size: 14px; margin-bottom: 6px; }
+  .concept-card p { font-size: 13px; color: var(--muted); }
+
+  /* CODE BLOCK */
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .code-header {
+    background: #0f1117;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-header span { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #f87171; }
+  .dot-y { background: #fbbf24; }
+  .dot-g { background: #34d399; }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .kw { color: #818cf8; }       /* keywords */
+  .cls { color: #67e8f9; }      /* classes */
+  .str { color: #a3e635; }      /* strings */
+  .cmt { color: #4b5563; font-style: italic; } /* comments */
+  .fn { color: #fbbf24; }       /* functions */
+  .var { color: #e2e8f0; }      /* variables */
+  .num { color: #fb923c; }      /* numbers */
+
+  /* ANNOTATION STEP */
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(79,142,247,0.15);
+    border: 1px solid rgba(79,142,247,0.35);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .step-body h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-body p { font-size: 13px; color: var(--muted); }
+  .step-body code {
+    background: rgba(79,142,247,0.1);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* QUIZ */
+  .quiz-q { margin-bottom: 28px; }
+  .quiz-q p { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+  }
+  .option:hover { border-color: var(--accent); background: rgba(79,142,247,0.07); }
+  .option.correct { border-color: var(--accent3); background: rgba(52,211,153,0.1); color: var(--accent3); }
+  .option.wrong { border-color: var(--danger); background: rgba(248,113,113,0.08); color: var(--danger); }
+  .option:disabled { cursor: default; }
+  .feedback {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok { background: rgba(52,211,153,0.1); color: var(--accent3); border: 1px solid rgba(52,211,153,0.2); }
+  .feedback.err { background: rgba(248,113,113,0.08); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
+  .score-bar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .score-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent3);
+  }
+  .score-label { font-size: 13px; color: var(--muted); }
+
+  /* FLASHCARDS */
+  .flashcard-wrap { perspective: 1000px; }
+  .flashcard {
+    width: 100%;
+    min-height: 200px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+    margin-bottom: 16px;
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute;
+    width: 100%; height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+    text-align: center;
+  }
+  .card-front { background: var(--card); }
+  .card-back { background: #131a26; border-color: rgba(79,142,247,0.3); transform: rotateY(180deg); }
+  .card-face .hint { font-size: 11px; color: var(--muted); margin-top: 12px; font-family: 'Space Mono', monospace; }
+  .card-face h3 { font-size: 18px; }
+  .card-face p { font-size: 14px; color: #94a3b8; margin-top: 8px; }
+  .fc-nav { display: flex; gap: 10px; justify-content: center; align-items: center; }
+  .fc-nav button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .fc-nav button:hover { border-color: var(--accent); color: var(--accent); }
+  .fc-counter { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); }
+
+  /* ARCHITECTURE DIAGRAM */
+  .arch {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .arch-col {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .arch-col:last-child { border-right: none; }
+  .arch-col .icon { font-size: 28px; margin-bottom: 10px; }
+  .arch-col h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .arch-col p { font-size: 12px; color: var(--muted); }
+  .arch-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--accent); padding: 0 4px;
+  }
+
+  /* TAG PILL */
+  .pill {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin: 2px;
+  }
+  .pill-blue { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.25); }
+  .pill-green { background: rgba(52,211,153,0.12); color: var(--accent3); border: 1px solid rgba(52,211,153,0.25); }
+  .pill-purple { background: rgba(167,139,250,0.12); color: var(--accent2); border: 1px solid rgba(167,139,250,0.25); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: #0f1117;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(37,42,58,0.5); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td code {
+    background: rgba(79,142,247,0.1);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* UTIL */
+  .mt { margin-top: 20px; }
+  .mb { margin-bottom: 20px; }
+  .note {
+    background: rgba(251,191,36,0.07);
+    border-left: 3px solid var(--warn);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fde68a;
+    margin: 12px 0;
+  }
+  .tip {
+    background: rgba(52,211,153,0.07);
+    border-left: 3px solid var(--accent3);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6ee7b7;
+    margin: 12px 0;
+  }
+
+  @media (max-width: 600px) {
+    main { padding: 16px; }
+    nav { padding: 12px 16px 0; }
+    header { padding: 28px 16px 20px; }
+    .arch { flex-direction: column; }
+    .arch-col { border-right: none; border-bottom: 1px solid var(--border); }
+    .arch-col:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">ETAPA 3 — ADO.NET</div>
+  <h1>Acceso a Datos con ADO.NET</h1>
+  <p>Guía de estudio interactiva · VB.NET + Teoría completa</p>
+</header>
+
+<nav id="nav">
+  <button class="active" onclick="switchTab('conceptos')">📚 Conceptos</button>
+  <button onclick="switchTab('arquitectura')">🏗 Arquitectura</button>
+  <button onclick="switchTab('codigo')">💻 Código VB.NET</button>
+  <button onclick="switchTab('clases')">🔧 Clases ADO</button>
+  <button onclick="switchTab('flashcards')">🃏 Flashcards</button>
+  <button onclick="switchTab('quiz')">🧪 Quiz</button>
+</nav>
+
+<main>
+
+<!-- ===== TAB: CONCEPTOS ===== -->
+<div id="tab-conceptos" class="tab-panel active">
+  <div class="section-title">¿Qué es ADO.NET?</div>
+  <div class="card">
+    <h2>Definición</h2>
+    <p>ADO.NET es la evolución del modelo de objetos ADO (ActiveX Data Objects) de Microsoft. Es el conjunto de clases, interfaces, estructuras y enumeraciones que permiten el acceso a datos desde la plataforma <strong>.NET</strong>.</p>
+    <div class="tip" style="margin-top:14px;">💡 Clave: ADO.NET usa <strong>XML</strong> como formato universal de transmisión de datos y trabaja en modo <strong>desconectado</strong> para reducir tráfico de red.</div>
+  </div>
+
+  <div class="section-title">Beneficios</div>
+  <div class="grid">
+    <div class="concept-card">
+      <div class="label">BENEFICIO 1</div>
+      <h3>🔄 Interoperabilidad</h3>
+      <p>Usa XML como estándar, por lo que cualquier componente que interprete XML puede acceder a los datos de ADO.NET.</p>
+    </div>
+    <div class="concept-card green">
+      <div class="label">BENEFICIO 2</div>
+      <h3>🔧 Mantenimiento</h3>
+      <p>Permite cambios estructurales en el sistema sin la complejidad que tenían los modelos anteriores.</p>
+    </div>
+    <div class="concept-card purple">
+      <div class="label">BENEFICIO 3</div>
+      <h3>📝 Programación</h3>
+      <p>API de fuerte tipificado, estructurado y centrado en la presentación correcta de datos.</p>
+    </div>
+    <div class="concept-card yellow">
+      <div class="label">BENEFICIO 4</div>
+      <h3>⚡ Rendimiento</h3>
+      <p>No se necesita conversión de tipos COM. Reduce ancho de banda e independiza cliente del servidor.</p>
+    </div>
+    <div class="concept-card">
+      <div class="label">BENEFICIO 5</div>
+      <h3>📈 Escalabilidad</h3>
+      <p>Modo Off-Line evita reservar recursos innecesariamente. Más usuarios por unidad de tiempo. Soporta Clusters de alta disponibilidad.</p>
+    </div>
+  </div>
+
+  <div class="section-title mt">Espacios de Nombres</div>
+  <div class="card">
+    <div style="overflow-x:auto;">
+    <table>
+      <tr>
+        <th>Namespace</th>
+        <th>Descripción</th>
+      </tr>
+      <tr><td><code>System.Data</code></td><td>Clases genéricas — núcleo de ADO.NET</td></tr>
+      <tr><td><code>System.Data.SqlClient</code></td><td>Proveedor para SQL Server 7.0+</td></tr>
+      <tr><td><code>System.Data.OleDb</code></td><td>Proveedor para controladores OleDB/ActiveX</td></tr>
+      <tr><td><code>System.Data.SqlTypes</code></td><td>Tipos de datos nativos de SQL Server</td></tr>
+      <tr><td><code>System.Data.Common</code></td><td>Clases base reutilizables</td></tr>
+      <tr><td><code>System.Data.Internal</code></td><td>Clases internas de los proveedores</td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB: ARQUITECTURA ===== -->
+<div id="tab-arquitectura" class="tab-panel">
+  <div class="section-title">Modo Desconectado</div>
+  <div class="card">
+    <h2>¿Cómo funciona la arquitectura desconectada?</h2>
+    <p>ADO.NET se conecta al servidor <strong>solo lo estrictamente necesario</strong> para cargar los datos en el DataSet. Luego se desconecta y el programa trabaja con los datos locales.</p>
+  </div>
+
+  <div class="arch">
+    <div class="arch-col">
+      <div class="icon">🖥</div>
+      <h4>Base de Datos</h4>
+      <p>SQL Server, Access, Oracle u otra fuente de datos</p>
+    </div>
+    <div class="arch-arrow">⇄</div>
+    <div class="arch-col">
+      <div class="icon">🔌</div>
+      <h4>Proveedor de Datos</h4>
+      <p>Connection · Command · DataReader · DataAdapter</p>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-col">
+      <div class="icon">📦</div>
+      <h4>DataSet</h4>
+      <p>Caché local desconectada con DataTables, DataRelations y Constraints</p>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-col">
+      <div class="icon">📊</div>
+      <h4>UI / App</h4>
+      <p>DataGridView, MsgBox u otro componente de presentación</p>
+    </div>
+  </div>
+
+  <div class="note">⚠️ En el modo desconectado es inviable consultar la BD por cada registro. Por eso el DataSet almacena toda la información necesaria de una sola vez.</div>
+
+  <div class="section-title mt">Clases del Sistema de Datos</div>
+  <div class="grid">
+    <div class="concept-card">
+      <div class="label">System.Data</div>
+      <h3>DataSet</h3>
+      <p>Base de datos virtual desconectada. Almacena tablas y relaciones.</p>
+    </div>
+    <div class="concept-card green">
+      <div class="label">System.Data</div>
+      <h3>DataTable</h3>
+      <p>Contenedor con filas (DataRow) y columnas (DataColumn).</p>
+    </div>
+    <div class="concept-card purple">
+      <div class="label">System.Data</div>
+      <h3>DataRow</h3>
+      <p>Registro con n valores. Representa una fila/tupla de la BD.</p>
+    </div>
+    <div class="concept-card yellow">
+      <div class="label">System.Data</div>
+      <h3>DataRelation</h3>
+      <p>Enlace entre columnas de dos o más tablas.</p>
+    </div>
+    <div class="concept-card">
+      <div class="label">System.Data</div>
+      <h3>DataColumn</h3>
+      <p>Metadatos y datos asociados al dominio de una columna.</p>
+    </div>
+    <div class="concept-card green">
+      <div class="label">System.Data</div>
+      <h3>Constraint</h3>
+      <p>Reglas de validación de las columnas de la tabla.</p>
+    </div>
+  </div>
+
+  <div class="section-title mt">Persistencia Off-Line</div>
+  <div class="card">
+    <p>La <strong>persistencia</strong> permite que un componente guarde su estado (variables, propiedades, datos) en un momento dado. En ADO.NET puedes cerrar la app y mantener los DataSets guardados, de modo que al reiniciar los encuentras tal como los dejaste — sin necesidad de volver a consultar la BD.</p>
+  </div>
+</div>
+
+<!-- ===== TAB: CÓDIGO ===== -->
+<div id="tab-codigo" class="tab-panel">
+  <div class="section-title">Código Original</div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>Form1.vb — VB.NET + OleDb</span>
+    </div>
+    <pre><span class="kw">Imports</span> <span class="cls">System.Data.OleDb</span>
+
+<span class="kw">Public Class</span> <span class="cls">Form1</span>
+    <span class="kw">Private Sub</span> <span class="fn">btnpeliculas_Click</span>(<span class="var">sender</span> <span class="kw">As Object</span>, <span class="var">e</span> <span class="kw">As</span> <span class="cls">EventArgs</span>) <span class="kw">Handles</span> btnpeliculas.Click
+        <span class="kw">Dim</span> <span class="var">conexion</span> <span class="kw">As String</span>
+        <span class="var">conexion</span> = <span class="str">"Provider=Microsoft.ACE.OLEDB.12.0; Data Source="</span> &amp; <span class="str">"IMDb.accdb"</span>
+
+        <span class="kw">Dim</span> <span class="var">seleccion</span> = <span class="str">"SELECT * FROM Peliculas"</span>
+
+        <span class="kw">Dim</span> <span class="var">adaptadordedatos</span> <span class="kw">As New</span> <span class="cls">OleDbDataAdapter</span>
+        <span class="kw">Dim</span> <span class="var">tabladedatos</span> <span class="kw">As New</span> <span class="cls">DataTable</span>
+
+        <span class="kw">Try</span>
+            <span class="var">adaptadordedatos</span> = <span class="kw">New</span> <span class="cls">OleDbDataAdapter</span>(<span class="var">seleccion</span>, <span class="var">conexion</span>)
+            <span class="var">adaptadordedatos</span>.<span class="fn">Fill</span>(<span class="var">tabladedatos</span>)
+            MsgBox.DataSource = <span class="var">tabladedatos</span>
+        <span class="kw">Catch</span> <span class="var">ex</span> <span class="kw">As</span> <span class="cls">Exception</span>
+            <span class="cls">Interaction</span>.<span class="fn">MsgBox</span>(<span class="str">"Error al mostrar los datos: "</span> &amp; <span class="var">ex</span>.Message)
+        <span class="kw">End Try</span>
+    <span class="kw">End Sub</span>
+<span class="kw">End Class</span></pre>
+  </div>
+
+  <div class="section-title">Análisis Línea a Línea</div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h4>Imports System.Data.OleDb</h4>
+      <p>Importa el espacio de nombres que contiene las clases para conectarse a bases de datos a través de OleDB, como <code>OleDbDataAdapter</code> y <code>OleDbConnection</code>. Equivalente a un <em>using</em> en C#.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h4>Cadena de conexión (conexion)</h4>
+      <p>La cadena usa el proveedor <code>Microsoft.ACE.OLEDB.12.0</code> (para archivos .accdb de Microsoft Access) y apunta al archivo <code>IMDb.accdb</code>. En producción, la ruta suele ser absoluta o configurada externamente.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h4>Sentencia SQL (seleccion)</h4>
+      <p><code>SELECT * FROM Peliculas</code> recupera todas las columnas y filas de la tabla <em>Peliculas</em>. Ésta es la propiedad <code>CommandText</code> que el DataAdapter usará internamente.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h4>OleDbDataAdapter</h4>
+      <p>El <strong>DataAdapter</strong> es el puente entre la BD y el DataSet/DataTable. Abre la conexión, ejecuta el SELECT, llena la tabla y cierra la conexión automáticamente — todo en una sola operación con <code>Fill()</code>.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <h4>DataTable (tabladedatos)</h4>
+      <p>Almacén local de los datos. Después de <code>Fill()</code>, contiene todos los registros de la tabla <em>Peliculas</em> en memoria, sin necesidad de seguir conectado a la BD.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <h4>adaptadordedatos.Fill(tabladedatos)</h4>
+      <p>Ejecuta la consulta SQL, transfiere los resultados al <code>DataTable</code> y cierra la conexión. Este es el paso central del modo desconectado.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <h4>MsgBox.DataSource = tabladedatos</h4>
+      <p><code>MsgBox</code> es el nombre asignado al control <code>DataGridView</code> en el formulario. Al asignarle el DataTable como <code>DataSource</code>, el grid muestra automáticamente todos los registros de la tabla <em>Peliculas</em> en pantalla.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <h4>Try / Catch</h4>
+      <p>Manejo de errores. Si falla la conexión, la consulta u otra operación, el bloque <code>Catch</code> captura la excepción y muestra el mensaje de error con <code>Interaction.MsgBox()</code>.</p>
+    </div>
+  </div>
+
+  <div class="section-title mt">Proveedores OleDB compatibles</div>
+  <div class="card">
+    <div style="overflow-x:auto;">
+    <table>
+      <tr><th>Proveedor</th><th>Base de datos</th></tr>
+      <tr><td><code>SQLOLEDB</code></td><td>Microsoft SQL Server</td></tr>
+      <tr><td><code>MSDAORA</code></td><td>Oracle</td></tr>
+      <tr><td><code>Microsoft.Jet.OLEDB.4.0</code></td><td>Microsoft Jet (.mdb)</td></tr>
+      <tr><td><code>Microsoft.ACE.OLEDB.12.0</code></td><td>Microsoft Access (.accdb) ← el del código</td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+<!-- ===== TAB: CLASES ADO ===== -->
+<div id="tab-clases" class="tab-panel">
+  <div class="section-title">Clase Connection</div>
+  <div class="card">
+    <h2>Establecer la Conexión</h2>
+    <p>Es el <strong>primer paso</strong> obligado. Existen dos implementaciones:</p>
+    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+      <span class="pill pill-blue">SqlConnection → SQL Server</span>
+      <span class="pill pill-purple">OleDbConnection → OleDB genérico</span>
+    </div>
+    <div class="tip" style="margin-top:14px;">El método <code>Open()</code> abre la conexión definida en <code>ConnectionString</code>. Las conexiones también pueden abrirse implícitamente mediante un DataAdapter.</div>
+  </div>
+
+  <div class="section-title">Clase Command</div>
+  <div class="card">
+    <h2>Enviar Sentencias SQL</h2>
+    <p>Permite ejecutar sentencias SQL o procedimientos almacenados. Sus implementaciones son <code>SqlCommand</code> y <code>OleDbCommand</code>.</p>
+    <div class="mt" style="overflow-x:auto;">
+    <table>
+      <tr><th>Propiedad / Método</th><th>Descripción</th></tr>
+      <tr><td><code>CommandText</code></td><td>Sentencia SQL o nombre del procedimiento almacenado</td></tr>
+      <tr><td><code>CommandTimeout</code></td><td>Tiempo de espera en segundos (default: 30)</td></tr>
+      <tr><td><code>CommandType</code></td><td>Text · StoredProcedure · TableDirect</td></tr>
+      <tr><td><code>Connection</code></td><td>Objeto de conexión asociado</td></tr>
+      <tr><td><code>Parameters</code></td><td>Colección de parámetros para la consulta</td></tr>
+      <tr><td><code>ExecuteNonQuery()</code></td><td>UPDATE, DELETE, INSERT (sin registros de retorno)</td></tr>
+      <tr><td><code>ExecuteReader()</code></td><td>Devuelve un DataReader para lectura</td></tr>
+      <tr><td><code>ExecuteScalar()</code></td><td>Devuelve la primera columna de la primera fila</td></tr>
+      <tr><td><code>Prepare()</code></td><td>Crea una versión compilada del Command en la BD</td></tr>
+      <tr><td><code>CreateParameter()</code></td><td>Crea un parámetro con tipo, valor, tamaño, etc.</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="section-title">Clase DataReader</div>
+  <div class="card">
+    <h2>Lectura Rápida de Registros</h2>
+    <p>Permite navegar <strong>hacia adelante y sólo lectura</strong> por los registros devueltos. Es el equivalente al Recordset de ADO en modo <em>read-only / forward-only</em>. Implementaciones: <code>SqlDataReader</code> y <code>OleDbDataReader</code>.</p>
+    <div class="note" style="margin-top:14px;">⚠️ El DataReader permanece <strong>conectado</strong> mientras recorre los registros. Es más rápido que el DataSet pero requiere conexión constante.</div>
+    <div class="mt" style="overflow-x:auto;">
+    <table>
+      <tr><th>Propiedad</th><th>Descripción</th></tr>
+      <tr><td><code>FieldCount</code></td><td>Número de columnas en la fila actual</td></tr>
+      <tr><td><code>IsClosed</code></td><td>True/False si el DataReader está cerrado</td></tr>
+      <tr><td><code>Item</code></td><td>Valor de la columna indicada por nombre</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="section-title">Comparativa: DataReader vs DataSet</div>
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <tr><th>Característica</th><th>DataReader</th><th>DataSet / DataTable</th></tr>
+      <tr><td>Conexión</td><td>Conectado siempre</td><td>Desconectado</td></tr>
+      <tr><td>Navegación</td><td>Solo hacia adelante</td><td>Libre (adelante y atrás)</td></tr>
+      <tr><td>Velocidad</td><td>Más rápido</td><td>Más lento</td></tr>
+      <tr><td>Uso de memoria</td><td>Bajo</td><td>Mayor (carga todo)</td></tr>
+      <tr><td>Modificación de datos</td><td>No</td><td>Sí</td></tr>
+      <tr><td>Persistencia Off-Line</td><td>No</td><td>Sí</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TAB: FLASHCARDS ===== -->
+<div id="tab-flashcards" class="tab-panel">
+  <div class="section-title">Tarjetas de Memoria</div>
+  <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Haz clic en la tarjeta para ver la respuesta.</p>
+
+  <div class="flashcard-wrap">
+    <div class="flashcard" id="fc" onclick="flipCard()">
+      <div class="card-face card-front">
+        <h3 id="fc-q">¿Qué es un DataSet en ADO.NET?</h3>
+        <p class="hint">👆 Clic para ver respuesta</p>
+      </div>
+      <div class="card-face card-back">
+        <p id="fc-a">Una caché de registros recuperados de una base de datos que actúa como almacenamiento virtual desconectado. Contiene una o más DataTables, relaciones y restricciones.</p>
+        <p class="hint">👆 Clic para voltear</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="fc-nav">
+    <button onclick="prevCard()">← Anterior</button>
+    <span class="fc-counter" id="fc-counter">1 / 10</span>
+    <button onclick="nextCard()">Siguiente →</button>
+  </div>
+</div>
+
+<!-- ===== TAB: QUIZ ===== -->
+<div id="tab-quiz" class="tab-panel">
+  <div class="section-title">Pon a Prueba tu Conocimiento</div>
+
+  <div class="score-bar">
+    <div class="score-num" id="score-display">0/8</div>
+    <div>
+      <div style="font-weight:600; font-size:14px;">Puntuación</div>
+      <div class="score-label">Responde todas las preguntas</div>
+    </div>
+  </div>
+
+  <div id="quiz-container"></div>
+</div>
+
+</main>
+
+<script>
+// ===== TABS =====
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const btns = document.querySelectorAll('nav button');
+  const labels = ['conceptos','arquitectura','codigo','clases','flashcards','quiz'];
+  btns[labels.indexOf(id)].classList.add('active');
+}
+
+// ===== FLASHCARDS =====
+const cards = [
+  { q: '¿Qué es un DataSet en ADO.NET?', a: 'Una caché de registros desconectada de la BD que contiene DataTables, relaciones y restricciones. Actúa como una base de datos virtual en memoria.' },
+  { q: '¿Cuál es la diferencia entre SqlConnection y OleDbConnection?', a: 'SqlConnection es específica para SQL Server (más eficiente). OleDbConnection es genérica y funciona con varios proveedores (Access, Oracle, etc.) a través del estándar OleDB.' },
+  { q: '¿Para qué sirve ExecuteNonQuery()?', a: 'Para ejecutar sentencias SQL que NO devuelven registros, como INSERT, UPDATE y DELETE. Devuelve el número de filas afectadas.' },
+  { q: '¿Cuál es la diferencia entre DataReader y DataSet?', a: 'DataReader: conectado, solo lectura, solo hacia adelante, más rápido. DataSet: desconectado, permite escritura y navegación libre, más completo.' },
+  { q: '¿Qué proveedor OleDB se usa para archivos .accdb de Access?', a: 'Microsoft.ACE.OLEDB.12.0 — que es el que se ve en el código del ejemplo con la base de datos IMDb.accdb.' },
+  { q: '¿Qué hace el método Fill() del DataAdapter?', a: 'Abre la conexión, ejecuta la sentencia SQL, transfiere los resultados al DataSet/DataTable y cierra la conexión automáticamente.' },
+  { q: '¿Qué es la persistencia en el contexto de ADO.NET?', a: 'La capacidad de guardar el estado de los DataSets al cerrar la app y recuperarlos al reiniciarla, sin necesidad de volver a consultar la base de datos.' },
+  { q: '¿Qué propiedad de Command indica si es SQL directo o procedimiento almacenado?', a: 'La propiedad CommandType, que puede ser Text (SQL directo), StoredProcedure (procedimiento almacenado) o TableDirect (solo OleDb).' },
+  { q: '¿Por qué ADO.NET usa el modo desconectado?', a: 'Para reducir bloqueos, conexiones y tráfico de red, permitiendo que más usuarios accedan al sistema por unidad de tiempo y mejorando el rendimiento general.' },
+  { q: '¿Cuál es el formato universal de transmisión de datos que usa ADO.NET?', a: 'XML — lo que garantiza interoperabilidad con cualquier componente capaz de interpretar datos XML, independientemente de su origen.' },
+];
+
+let currentCard = 0;
+let isFlipped = false;
+
+function updateCard() {
+  isFlipped = false;
+  document.getElementById('fc').classList.remove('flipped');
+  document.getElementById('fc-q').textContent = cards[currentCard].q;
+  document.getElementById('fc-a').textContent = cards[currentCard].a;
+  document.getElementById('fc-counter').textContent = (currentCard + 1) + ' / ' + cards.length;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('fc').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  currentCard = (currentCard + 1) % cards.length;
+  updateCard();
+}
+
+function prevCard() {
+  currentCard = (currentCard - 1 + cards.length) % cards.length;
+  updateCard();
+}
+
+// ===== QUIZ =====
+const questions = [
+  {
+    q: '¿Cuál es el formato de transmisión de datos que usa ADO.NET?',
+    opts: ['JSON', 'XML', 'CSV', 'YAML'],
+    correct: 1,
+    exp: 'ADO.NET usa XML como formato universal de transmisión. Esto garantiza interoperabilidad con cualquier sistema que interprete XML.'
+  },
+  {
+    q: '¿Qué objeto actúa como "base de datos virtual desconectada" en ADO.NET?',
+    opts: ['DataReader', 'DataAdapter', 'DataSet', 'DataColumn'],
+    correct: 2,
+    exp: 'El DataSet es la caché de registros que actúa como almacenamiento virtual desconectado, conteniendo DataTables y relaciones.'
+  },
+  {
+    q: 'En el código VB.NET, ¿qué método transfiere los datos de la BD al DataTable?',
+    opts: ['Open()', 'Fill()', 'Execute()', 'Load()'],
+    correct: 1,
+    exp: 'adaptadordedatos.Fill(tabladedatos) ejecuta la consulta SQL y llena el DataTable con los resultados.'
+  },
+  {
+    q: '¿Cuál propiedad del objeto Command define la sentencia SQL a ejecutar?',
+    opts: ['CommandType', 'CommandTimeout', 'CommandText', 'Connection'],
+    correct: 2,
+    exp: 'CommandText contiene la cadena de texto con la sentencia SQL o nombre del procedimiento almacenado.'
+  },
+  {
+    q: '¿Cuál es la diferencia principal entre DataReader y DataSet?',
+    opts: [
+      'DataReader trabaja con XML, DataSet con JSON',
+      'DataReader es desconectado, DataSet es conectado',
+      'DataReader es conectado y solo lectura; DataSet es desconectado y completo',
+      'No hay diferencia, son equivalentes'
+    ],
+    correct: 2,
+    exp: 'DataReader permanece conectado, es solo lectura y solo hacia adelante (más rápido). DataSet es desconectado, permite escritura y navegación libre.'
+  },
+  {
+    q: '¿Qué método de Command se usa para INSERT, UPDATE o DELETE?',
+    opts: ['ExecuteReader()', 'ExecuteScalar()', 'ExecuteNonQuery()', 'ExecuteCommand()'],
+    correct: 2,
+    exp: 'ExecuteNonQuery() ejecuta sentencias que no devuelven un conjunto de registros (DML: INSERT, UPDATE, DELETE).'
+  },
+  {
+    q: '¿Qué proveedor OleDB usa el código de ejemplo para conectarse a IMDb.accdb?',
+    opts: ['SQLOLEDB', 'MSDAORA', 'Microsoft.Jet.OLEDB.4.0', 'Microsoft.ACE.OLEDB.12.0'],
+    correct: 3,
+    exp: 'La cadena de conexión usa "Provider=Microsoft.ACE.OLEDB.12.0" que es el proveedor para archivos .accdb de Access modernos.'
+  },
+  {
+    q: '¿Cuál de estos NO es un beneficio de ADO.NET mencionado en el texto?',
+    opts: ['Interoperabilidad', 'Escalabilidad', 'Compatibilidad con Java', 'Rendimiento mejorado'],
+    correct: 2,
+    exp: 'Los beneficios del texto son: Interoperabilidad, Mantenimiento, Programación, Rendimiento y Escalabilidad. La compatibilidad con Java no se menciona.'
+  },
+];
+
+let score = 0;
+let answered = 0;
+
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+  questions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-q card';
+    div.innerHTML = `
+      <p>${qi + 1}. ${q.q}</p>
+      <div class="options" id="opts-${qi}">
+        ${q.opts.map((o, oi) => `<button class="option" onclick="answer(${qi},${oi})">${o}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${qi}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function answer(qi, oi) {
+  const opts = document.querySelectorAll(`#opts-${qi} .option`);
+  opts.forEach(b => { b.disabled = true; });
+  const q = questions[qi];
+  const fb = document.getElementById(`fb-${qi}`);
+  if (oi === q.correct) {
+    opts[oi].classList.add('correct');
+    fb.className = 'feedback show ok';
+    fb.textContent = '✅ ' + q.exp;
+    score++;
+  } else {
+    opts[oi].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    fb.className = 'feedback show err';
+    fb.textContent = '❌ ' + q.exp;
+  }
+  answered++;
+  document.getElementById('score-display').textContent = score + '/' + questions.length;
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
